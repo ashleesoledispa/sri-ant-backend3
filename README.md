@@ -1,190 +1,180 @@
-# 🟦 Sistema de Consulta SRI & ANT – Diseño y Arquitectura de Software
 
-Este proyecto implementa un sistema web que permite consultar información del SRI y la ANT a partir de la cédula/RUC de una persona natural y la placa de un vehículo.  
-Incluye un patrón de diseño para manejar la baja disponibilidad de la ANT utilizando **cache-aside** y un **proxy interno**.
+# 🏛️ Sistema de Consulta SRI + ANT  
+Microservicio en Java + Frontend React + Caché para consultas del SRI y ANT  
+---
 
-Proyecto desarrollado en **Spring Boot 3**, **Thymeleaf**, **WebClient** y **caché en memoria**.
+Este sistema permite consultar tres fuentes oficiales ecuatorianas:
+
+1. **Contribuyentes del SRI** (validar existencia y obtener datos de persona natural)  
+2. **Datos vehiculares del SRI** (por número de placa)  
+3. **Puntos de licencia de la ANT** (con caché por baja disponibilidad)
+
+Desarrollado conforme a la consigna de la materia **ISWZ2202 – Diseño y Arquitectura de Software**.
 
 ---
 
-## ✨ Características principales
+## 🚀 Tecnologías utilizadas
 
-✔ Formulario web estilizado minimalista con colores del SRI  
-✔ Consulta al SRI para verificar si un RUC existe como contribuyente  
-✔ Transformación automática de cédula → RUC persona natural (cédula + "001")  
-✔ Obtención de datos del contribuyente vía API REST del SRI  
-✔ Obtención de datos del vehículo vía API REST del SRI  
-✔ Consulta de puntos de licencia en la ANT  
-✔ Implementación del patrón **Cache-Aside + Proxy** para fallas de la ANT  
-✔ Interfaz moderna y responsiva (HTML + CSS)
-
----
-
-## 🏗 Arquitectura del Sistema
-
-- **Frontend:** Thymeleaf + HTML + CSS minimalista  
-- **Backend:** Spring Boot (Java 17)  
-- **Cliente HTTP:** WebClient (reactivo)  
-- **Caché:** Spring Cache + ConcurrentMapCache  
-- **Patrón usado:** Proxy + Cache-Aside Pattern  
-
-### 📌 Flujo General
-
-1. El usuario ingresa:  
-   - Email  
-   - Cédula/RUC  
-   - Placa  
-2. El sistema convierte la cédula en RUC (si son 10 dígitos → agrega “001”).  
-3. Llama a la API del SRI para verificar si es contribuyente.  
-4. Si es válido:  
-   - Muestra información del contribuyente  
-   - Muestra datos del vehículo  
-   - Consulta puntos de licencia en la ANT  
-5. La consulta de ANT pasa por un **servicio proxy** que almacena en caché.  
-6. Si ANT está caída → se devuelve la última respuesta guardada.
-
----
-
-## 🔧 Tecnologías utilizadas
-
+### 🔹 Backend (Java – Spring Boot 3)
 - Java 17  
-- Spring Boot 3.5.7  
+- Spring Web  
+- WebFlux (WebClient)  
 - Spring Cache  
-- Spring WebClient (reactivo)  
-- Thymeleaf  
 - Maven  
-- HTML + CSS minimalista  
+
+### 🔹 Frontend (React)
+- React + Vite  
+- Axios  
+
+### 🔹 Caché
+- In-Memory Cache (Spring Cache)  
+- *Opcional:* Redis Cloud (configurable)
 
 ---
 
-## 🌐 APIs utilizadas
+# 🧩 Arquitectura (Modelo C4)
 
-### ✔ Validar si un RUC es contribuyente
-```
+Los diagramas se encuentran creados en **IcePanel** y cada uno contiene un **enlace directo a este repositorio**, cumpliendo la consigna del profesor.
 
-[https://srienlinea.sri.gob.ec/sri-catastro-sujeto-servicio-internet/rest/ConsolidadoContribuyente/existePorNumeroRuc?numeroRuc=](https://srienlinea.sri.gob.ec/sri-catastro-sujeto-servicio-internet/rest/ConsolidadoContribuyente/existePorNumeroRuc?numeroRuc=)
+### ✔ Nivel 1 – Context Diagram  
+Muestra:
+- Usuario  
+- Sistema de Consulta SRI + ANT  
+- SRI (servicio externo)  
+- ANT (servicio externo)
 
-```
+### ✔ Nivel 2 – App Diagram  
+Descompone el sistema principal en:
+- Frontend React  
+- Backend Java  
+- Módulo de Caché  
+- Servicios externos
 
-### ✔ Obtener información del contribuyente
-```
+### ✔ Nivel 3 – Component Diagram  
+Detalla los componentes internos del backend:
+- SriAntController  
+- SriAntService  
+- SRIClient  
+- ANTClient  
+- AntCache  
 
-[https://srienlinea.sri.gob.ec/sri-catastro-sujeto-servicio-internet/rest/ConsolidadoContribuyente/obtenerPorNumerosRuc?&ruc=](https://srienlinea.sri.gob.ec/sri-catastro-sujeto-servicio-internet/rest/ConsolidadoContribuyente/obtenerPorNumerosRuc?&ruc=)
 
-```
+# 🛠️ Ejecución del Backend
 
-### ✔ Obtener datos del vehículo
-```
-
-[https://srienlinea.sri.gob.ec/sri-matriculacion-vehicular-recaudacion-servicio-internet/rest/BaseVehiculo/obtenerPorNumeroPlacaOPorNumeroCampvOPorNumeroCpn?numeroPlacaCampvCpn=](https://srienlinea.sri.gob.ec/sri-matriculacion-vehicular-recaudacion-servicio-internet/rest/BaseVehiculo/obtenerPorNumeroPlacaOPorNumeroCampvOPorNumeroCpn?numeroPlacaCampvCpn=)
-
-```
-
-### ✔ Obtener puntos de licencia (ANT)
-```
-
-[https://consultaweb.ant.gob.ec/PortalWEB/paginas/clientes/clp_grid_citaciones.jsp?ps_tipo_identificacion=CED&ps_identificacion=XXXXXX&ps_placa=](https://consultaweb.ant.gob.ec/PortalWEB/paginas/clientes/clp_grid_citaciones.jsp?ps_tipo_identificacion=CED&ps_identificacion=XXXXXX&ps_placa=)
-
-````
-
----
-
-## 🚀 Cómo ejecutar el proyecto
-
-### 1️⃣ **Clonar el repositorio**
+### 1️⃣ Clonar el repositorio
 ```bash
-git clone https://github.com/tuusuario/tu-repo.git
-cd tu-repo
-````
+git clone https://github.com/ashleesoledispa/sri-ant-backend3
 
-### 2️⃣ **Ejecutar con Maven**
+### 2️⃣ Ejecutar con Maven
 
 ```bash
 mvn spring-boot:run
 ```
 
-### 3️⃣ **O ejecutar desde IntelliJ IDEA**
-
-* Abrir el proyecto
-* Esperar a que Maven descargue dependencias
-* Abrir la clase:
-
-  ```
-  SriAntBackend3Application.java
-  ```
-* Clic en **Run ▶️**
-
----
-
-## 🧪 Cómo probar el sistema
-
-Una vez ejecutado, abrir en navegador:
+### 3️⃣ Abrir en navegador
 
 ```
 http://localhost:8080/
 ```
 
-### ✔ Ejemplo de prueba funcional (RUC que siempre funciona)
+---
 
-En el formulario:
+# 🛠️ Ejecución del Frontend (React)
 
-* Email: [prueba@gmail.com](mailto:prueba@gmail.com)
-* Cédula/RUC: `1768152560001`
-* Placa: cualquier placa (ej: `ABC-1234`)
+### 1️⃣ Ir al directorio del frontend
 
-Esto mostrará datos válidos del contribuyente.
+```bash
+cd frontend
+```
 
-### ✔ Para probar vehículo y ANT:
+### 2️⃣ Instalar dependencias
 
-Usa el **RUC real del dueño del vehículo** y la placa verdadera.
+```bash
+npm install
+```
 
-Si el vehículo pertenece al RUC → SRI devuelve datos correctos
-Si no → “El vehículo no existe” (normal)
+### 3️⃣ Ejecutar React
 
-### ✔ Probar caché de ANT
+```bash
+npm run dev
+```
 
-1. Ejecuta una consulta con una cédula válida → Se guarda en caché
-2. Apaga tu internet o bloquea la web ANT
-3. Ejecuta la misma consulta →
-   **TE DEVUELVE EL RESULTADO DESDE CACHÉ**
+Abrir:
 
-Esto demuestra que el patrón Cache-Aside está funcionando.
+```
+http://localhost:5173
+```
 
 ---
 
-## 🧱 Patrón aplicado: Cache-Aside + Proxy
+# 🧪 Pruebas recomendadas
 
-### 1. Servicio real (ANT)
+### ✔ RUC válido para pruebas (SRI)
 
-```java
-public Mono<String> consultarPuntos(String cedula)
+```
+1768152560001
 ```
 
-### 2. Servicio Proxy con caché
+### ✔ Email cualquiera
 
-```java
-@Cacheable(value = "antCache", key = "#cedula")
-public Mono<String> obtenerPuntosConCache(String cedula)
+```
+ejemplo@mail.com
 ```
 
-El Proxy:
+### ✔ Placa de vehículo
 
-* Intercepta la llamada
-* Busca primero en caché
-* Si no existe, llama a ANT
-* Guarda la respuesta
-* Si ANT falla → devuelve el dato guardado previamente
-
-Perfecto para **servicios con baja disponibilidad**.
-
-## 👩‍💻 Autora
-
-**Ashlee Soledispa Villamar**
-Universidad de las Américas – UDLA
-Ingeniería en Software
-Materia: Diseño y Arquitectura de Software
-
-
-
-y seguimos.
 ```
+ABC-1234   (para pruebas)
+MBC-1561   (si el RUC asociado coincide)
+```
+
+---
+
+# 🔐 Endpoints expuestos por el Backend
+
+### ✔ Validar existencia del contribuyente
+
+```
+GET /api/sri/existe?ruc={ruc}
+```
+
+### ✔ Obtener datos del contribuyente
+
+```
+GET /api/sri/obtener?ruc={ruc}
+```
+
+### ✔ Consultar vehículo
+
+```
+GET /api/vehiculo?placa={placa}
+```
+
+### ✔ Consultar puntos de licencia ANT (con caché)
+
+```
+GET /api/ant/puntos?cedula={cedula}
+```
+
+---
+
+# ⚙️ Patrón de caché implementado
+
+Debido a la baja disponibilidad del servicio ANT, se implementó un patrón:
+
+## ⭐ Cache-Aside (Look-Aside Pattern)
+
+1. El backend consulta primero el caché.
+2. Si existe → devuelve el dato sin llamar a ANT.
+3. Si no existe → llama a ANT.
+4. Si ANT responde → guarda en caché.
+5. Si ANT falla → devuelve el último valor guardado.
+
+Esto garantiza disponibilidad incluso si ANT está caída.
+
+---
+
+# 👩‍💻 Autor
+
+**Ashlee Soledispa**
+ISWZ2202 – Diseño y Arquitectura de Software
